@@ -33,7 +33,7 @@ When a continue-on-error step fails, the outcome will be `failure` even though t
   run: ./publish.sh experimental
 ```
 
-### Terminology with runs API
+### Terminology
 
 The runs API uses the term `conclusion`.
 
