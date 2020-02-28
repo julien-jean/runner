@@ -477,6 +477,7 @@ namespace GitHub.Runner.Common.Tests.Worker
             }
         }
 
+
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
@@ -513,7 +514,35 @@ namespace GitHub.Runner.Common.Tests.Worker
             }
         }
 
-        private Mock<IActionRunner> CreateStep(TestHostContext hc, TaskResult result, string condition, Boolean continueOnError = false, MappingToken env = null, string name = "Test", bool setOutput = false)
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public async Task StepContextResult()
+        {
+            using (TestHostContext hc = CreateTestContext())
+            {
+                // Arrange.
+                var step1 = CreateStep(hc, TaskResult.Succeeded, "success()", contextName: "step1");
+                var step2 = CreateStep(hc, TaskResult.Failed, "steps.step1.result == 'success'", contextName: "step2");
+                var step3 = CreateStep(hc, TaskResult.Succeeded, "steps.step1.result == 'success' && steps.step2.result == 'failure'");
+
+                _ec.Object.Result = null;
+
+                _ec.Setup(x => x.JobSteps).Returns(new Queue<IStep>(new[] { step1.Object, step2.Object, step3.Object }));
+
+                // Act.
+                await _stepsRunner.RunAsync(jobContext: _ec.Object);
+
+                // Assert.
+                Assert.Equal(TaskResult.Failed, _ec.Object.Result ?? TaskResult.Succeeded);
+
+                step1.Verify(x => x.RunAsync(), Times.Once);
+                step2.Verify(x => x.RunAsync(), Times.Once);
+                step3.Verify(x => x.RunAsync(), Times.Once);
+            }
+        }
+
+        private Mock<IActionRunner> CreateStep(TestHostContext hc, TaskResult result, string condition, Boolean continueOnError = false, MappingToken env = null, string name = "Test", bool setOutput = false, string contextName = null)
         {
             // Setup the step.
             var step = new Mock<IActionRunner>();
@@ -524,7 +553,8 @@ namespace GitHub.Runner.Common.Tests.Worker
                 {
                     Name = name,
                     Id = Guid.NewGuid(),
-                    Environment = env
+                    Environment = env,
+                    ContextName = contextName ?? "Test"
                 });
 
             // Setup the step execution context.
@@ -536,6 +566,7 @@ namespace GitHub.Runner.Common.Tests.Worker
             stepContext.Setup(x => x.ExpressionValues).Returns(_contexts);
             stepContext.Setup(x => x.JobContext).Returns(_jobContext);
             stepContext.Setup(x => x.StepsContext).Returns(_stepContext);
+            stepContext.Setup(x => x.ContextName).Returns(step.Object.Action.ContextName);
             stepContext.Setup(x => x.Complete(It.IsAny<TaskResult?>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Callback((TaskResult? r, string currentOperation, string resultCode) =>
                 {
