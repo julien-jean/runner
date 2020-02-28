@@ -26,11 +26,14 @@ When a continue-on-error step fails, the outcome will be `failure` even though t
 ### Example
 
 ```yaml
-- id: experimental
-  continue-on-error: true
-  run: ./build.sh experimental
-- if: ${{ steps.experimental.outcome == 'success' }}
-  run: ./publish.sh experimental
+steps:
+
+  - id: experimental
+    continue-on-error: true
+    run: ./build.sh experimental
+
+  - if: ${{ steps.experimental.outcome == 'success' }}
+    run: ./publish.sh experimental
 ```
 
 ### Terminology
