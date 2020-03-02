@@ -517,14 +517,14 @@ namespace GitHub.Runner.Common.Tests.Worker
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public async Task StepContextResult()
+        public async Task StepContextOutcome()
         {
             using (TestHostContext hc = CreateTestContext())
             {
                 // Arrange.
                 var step1 = CreateStep(hc, TaskResult.Succeeded, "success()", contextName: "step1");
-                var step2 = CreateStep(hc, TaskResult.Failed, "steps.step1.result == 'success'", contextName: "step2");
-                var step3 = CreateStep(hc, TaskResult.Succeeded, "steps.step1.result == 'success' && steps.step2.result == 'failure'");
+                var step2 = CreateStep(hc, TaskResult.Failed, "steps.step1.outcome == 'success'", continueOnError: true, contextName: "step2");
+                var step3 = CreateStep(hc, TaskResult.Succeeded, "steps.step1.outcome == 'success' && steps.step2.outcome == 'failure'");
 
                 _ec.Object.Result = null;
 
@@ -534,7 +534,7 @@ namespace GitHub.Runner.Common.Tests.Worker
                 await _stepsRunner.RunAsync(jobContext: _ec.Object);
 
                 // Assert.
-                Assert.Equal(TaskResult.Failed, _ec.Object.Result ?? TaskResult.Succeeded);
+                Assert.Equal(TaskResult.Succeeded, _ec.Object.Result ?? TaskResult.Succeeded);
 
                 step1.Verify(x => x.RunAsync(), Times.Once);
                 step2.Verify(x => x.RunAsync(), Times.Once);

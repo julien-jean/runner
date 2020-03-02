@@ -38,6 +38,7 @@ namespace GitHub.Runner.Worker
         string ContextName { get; }
         Task ForceCompleted { get; }
         TaskResult? Result { get; set; }
+        TaskResult? RawOutcome { get; set; }
         string ResultCode { get; set; }
         TaskResult? CommandResult { get; set; }
         CancellationToken CancellationToken { get; }
@@ -168,6 +169,8 @@ namespace GitHub.Runner.Worker
                 _record.Result = value;
             }
         }
+
+        public TaskResult? RawOutcome { get; set; }
 
         public TaskResult? CommandResult { get; set; }
 

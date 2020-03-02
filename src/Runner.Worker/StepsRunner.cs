@@ -353,6 +353,7 @@ namespace GitHub.Runner.Worker
 
                 if (continueOnError)
                 {
+                    step.ExecutionContext.RawOutcome = step.ExecutionContext.Result;
                     step.ExecutionContext.Result = TaskResult.Succeeded;
                     Trace.Info($"Updated step result (continue on error)");
                 }
@@ -473,11 +474,11 @@ namespace GitHub.Runner.Worker
                         }
                     }
 
-                    stepsContext.SetResult(parentScopeName, contextName, (result ?? step.ExecutionContext.Result ?? TaskResult.Succeeded).ToActionResult().ToString());
+                    stepsContext.SetOutcome(parentScopeName, contextName, (step.ExecutionContext.RawOutcome ?? result ?? step.ExecutionContext.Result ?? TaskResult.Succeeded).ToActionResult().ToString());
                 }
             }
 
-            stepsContext.SetResult(executionContext.ScopeName, executionContext.ContextName, (result ?? step.ExecutionContext.Result ?? TaskResult.Succeeded).ToActionResult().ToString());
+            stepsContext.SetOutcome(executionContext.ScopeName, executionContext.ContextName, (step.ExecutionContext.RawOutcome ?? result ?? step.ExecutionContext.Result ?? TaskResult.Succeeded).ToActionResult().ToString());
 
             executionContext.Complete(result, resultCode: resultCode);
         }

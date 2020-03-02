@@ -65,6 +65,15 @@ namespace GitHub.Runner.Worker
             step["result"] = new StringContextData(result);
         }
 
+        public void SetOutcome(
+            string scopeName,
+            string stepName,
+            string outcome)
+        {
+            var step = GetStep(scopeName, stepName);
+            step["outcome"] = new StringContextData(outcome);
+        }
+
         private DictionaryContextData GetStep(string scopeName, string stepName)
         {
             var scope = GetScope(scopeName);
