@@ -39,7 +39,8 @@ namespace GitHub.DistributedTask.Pipelines
             DictionaryContextData contextData,
             WorkspaceOptions workspaceOptions,
             IEnumerable<JobStep> steps,
-            IEnumerable<ContextScope> scopes)
+            IEnumerable<ContextScope> scopes,
+            TemplateToken jobOutPuts)
         {
             this.MessageType = JobRequestMessageTypes.PipelineAgentJobRequest;
             this.Plan = plan;
@@ -51,6 +52,7 @@ namespace GitHub.DistributedTask.Pipelines
             this.Timeline = timeline;
             this.Resources = jobResources;
             this.Workspace = workspaceOptions;
+            this.JobOutPuts = jobOutPuts;
 
             m_variables = new Dictionary<String, VariableValue>(variables, StringComparer.OrdinalIgnoreCase);
             m_maskHints = new List<MaskHint>(maskHints);
@@ -127,6 +129,13 @@ namespace GitHub.DistributedTask.Pipelines
 
         [DataMember(EmitDefaultValue = false)]
         public TemplateToken JobServiceContainers
+        {
+            get;
+            private set;
+        }
+
+        [DataMember(EmitDefaultValue = false)]
+        public TemplateToken JobOutPuts
         {
             get;
             private set;

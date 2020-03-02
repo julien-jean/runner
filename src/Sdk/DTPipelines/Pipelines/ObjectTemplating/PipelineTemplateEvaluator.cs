@@ -229,6 +229,32 @@ namespace GitHub.DistributedTask.Pipelines.ObjectTemplating
             return result;
         }
 
+        public Dictionary<String, String> EvaluateJobOutput(
+            TemplateToken token,
+            DictionaryContextData contextData)
+        {
+            var result = default(Dictionary<String, String>);
+
+            if (token != null && token.Type != TokenType.Null)
+            {
+                var context = CreateContext(contextData);
+                try
+                {
+                    token = TemplateEvaluator.Evaluate(context, PipelineTemplateConstants.JobOutputs, token, 0, null, omitHeader: true);
+                    context.Errors.Check();
+                    result = PipelineTemplateConverter.ConvertToJobOutput(context, token);
+                }
+                catch (Exception ex) when (!(ex is TemplateValidationException))
+                {
+                    context.Errors.Add(ex);
+                }
+
+                context.Errors.Check();
+            }
+
+            return result;
+        }
+
         public IList<KeyValuePair<String, JobContainer>> EvaluateJobServiceContainers(
             TemplateToken token,
             DictionaryContextData contextData)

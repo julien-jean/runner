@@ -20,6 +20,7 @@ using GitHub.Runner.Common;
 using GitHub.Runner.Sdk;
 using GitHub.DistributedTask.Pipelines.ContextData;
 using GitHub.DistributedTask.ObjectTemplating;
+using GitHub.DistributedTask.Pipelines.ObjectTemplating;
 
 namespace GitHub.Runner.Worker
 {
@@ -230,8 +231,18 @@ namespace GitHub.Runner.Worker
                 return result;
             }
 
+            // Evaluate job outputs
+            Dictionary<string, string> jobOutputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (message.Outputs?.Count > 0)
+            {
+                var templateTrace = jobContext.ToTemplateTraceWriter();
+                var schema = new PipelineTemplateSchemaFactory().CreateSchema();
+                var templateEvaluator = new PipelineTemplateEvaluator(templateTrace, schema);
+                jobOutputs = templateEvaluator.EvaluateJobOutput(message.Outputs, jobContext.ExpressionValues);
+            }
+
             Trace.Info("Raising job completed event.");
-            var jobCompletedEvent = new JobCompletedEvent(message.RequestId, message.JobId, result);
+            var jobCompletedEvent = new JobCompletedEvent(message.RequestId, message.JobId, result, jobOutputs);
 
             var completeJobRetryLimit = 5;
             var exceptions = new List<Exception>();

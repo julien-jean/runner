@@ -127,6 +127,47 @@ namespace GitHub.DistributedTask.Pipelines.ObjectTemplating
             return result;
         }
 
+        internal static Dictionary<String, String> ConvertToJobOutput(
+            TemplateContext context,
+            TemplateToken outputs,
+            Boolean allowExpressions = false)
+        {
+            var result = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+
+            // Expression
+            if (allowExpressions && outputs is ExpressionToken)
+            {
+                return result;
+            }
+
+            // Mapping
+            var mapping = outputs.AssertMapping("outputs");
+
+            foreach (var pair in mapping)
+            {
+                // Expression key
+                if (allowExpressions && pair.Key is ExpressionToken)
+                {
+                    continue;
+                }
+
+                // Literal key
+                var key = pair.Key.AssertString("output key");
+
+                // Expression value
+                if (allowExpressions && pair.Value is ExpressionToken)
+                {
+                    continue;
+                }
+
+                // Literal value
+                var value = pair.Value.AssertString("output value");
+                result[key.Value] = value.Value;
+            }
+
+            return result;
+        }
+
         internal static Int32? ConvertToStepTimeout(
             TemplateContext context,
             TemplateToken token,

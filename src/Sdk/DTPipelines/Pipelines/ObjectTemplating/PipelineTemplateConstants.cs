@@ -29,6 +29,7 @@ namespace GitHub.DistributedTask.Pipelines.ObjectTemplating
         public const String Include = "include";
         public const String Inputs = "inputs";
         public const String Job = "job";
+        public const String JobOutputs = "job-outputs";
         public const String Jobs = "jobs";
         public const String Lfs = "lfs";
         public const String Matrix = "matrix";

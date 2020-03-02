@@ -143,16 +143,20 @@
       "mapping": {
         "properties": {
           "needs": "needs",
-          "if": "string",
+          "if": "job-if",
           "strategy": "strategy",
           "name": "string-strategy-context",
-          "runs-on": "runs-on",
+          "runs-on": {
+            "type": "runs-on",
+            "required": true
+          },
           "timeout-minutes": "number-strategy-context",
           "cancel-timeout-minutes": "number-strategy-context",
           "continue-on-error": "boolean",
           "container": "container",
           "services": "services",
           "env": "job-env",
+          "outputs": "job-outputs",
           "steps": "steps"
         }
       }
@@ -163,6 +167,17 @@
         "sequence-of-non-empty-string",
         "non-empty-string"
       ]
+    },
+
+    "job-if": {
+      "context": [
+        "github",
+        "always(0,0)",
+        "failure(0,MAX)",
+        "cancelled(0,0)",
+        "success(0,MAX)"
+      ],
+      "string": {}
     },
 
     "strategy": {
@@ -236,21 +251,19 @@
         "matrix"
       ],
       "one-of": [
-        "runs-on-string",
+        "non-empty-string",
+        "sequence-of-non-empty-string",
         "runs-on-mapping"
       ]
-    },
-
-    "runs-on-string": {
-      "string": {
-        "require-non-empty": true
-      }
     },
 
     "runs-on-mapping": {
       "mapping": {
         "properties": {
-          "pool": "non-empty-string"
+          "pool": {
+            "type": "non-empty-string",
+            "required": true
+          }
         }
       }
     },
@@ -261,6 +274,22 @@
         "secrets",
         "strategy",
         "matrix"
+      ],
+      "mapping": {
+        "loose-key-type": "non-empty-string",
+        "loose-value-type": "string"
+      }
+    },
+
+    "job-outputs": {
+      "context": [
+        "github",
+        "strategy",
+        "matrix",
+        "steps",
+        "job",
+        "runner",
+        "env"
       ],
       "mapping": {
         "loose-key-type": "non-empty-string",
@@ -301,9 +330,12 @@
         "properties": {
           "name": "string-steps-context",
           "id": "non-empty-string",
-          "if": "string",
+          "if": "step-if",
           "timeout-minutes": "number-steps-context",
-          "run": "string-steps-context",
+          "run": {
+            "type": "string-steps-context",
+            "required": true
+          },
           "continue-on-error": "boolean-steps-context",
           "env": "step-env",
           "working-directory": "string-steps-context",
@@ -317,9 +349,12 @@
         "properties": {
           "name": "string-steps-context-in-template",
           "id": "non-empty-string",
-          "if": "string",
+          "if": "step-if-in-template",
           "timeout-minutes": "number-steps-context-in-template",
-          "run": "string-steps-context-in-template",
+          "run": {
+            "type": "string-steps-context-in-template",
+            "required": true
+          },
           "continue-on-error": "boolean-steps-context-in-template",
           "env": "step-env-in-template",
           "working-directory": "string-steps-context-in-template",
@@ -333,10 +368,13 @@
         "properties": {
           "name": "string-steps-context",
           "id": "non-empty-string",
-          "if": "string",
+          "if": "step-if",
           "continue-on-error": "boolean-steps-context",
           "timeout-minutes": "number-steps-context",
-          "uses": "non-empty-string",
+          "uses": {
+            "type": "non-empty-string",
+            "required": true
+          },
           "with": "step-with",
           "env": "step-env"
         }
@@ -348,14 +386,52 @@
         "properties": {
           "name": "string-steps-context-in-template",
           "id": "non-empty-string",
-          "if": "string",
+          "if": "step-if-in-template",
           "continue-on-error": "boolean-steps-context-in-template",
           "timeout-minutes": "number-steps-context-in-template",
-          "uses": "non-empty-string",
+          "uses": {
+            "type": "non-empty-string",
+            "required": true
+          },
           "with": "step-with-in-template",
           "env": "step-env-in-template"
         }
       }
+    },
+
+    "step-if": {
+      "context": [
+        "github",
+        "strategy",
+        "matrix",
+        "steps",
+        "job",
+        "runner",
+        "env",
+        "always(0,0)",
+        "failure(0,0)",
+        "cancelled(0,0)",
+        "success(0,0)"
+      ],
+      "string": {}
+    },
+
+    "step-if-in-template": {
+      "context": [
+        "github",
+        "strategy",
+        "matrix",
+        "steps",
+        "inputs",
+        "job",
+        "runner",
+        "env",
+        "always(0,0)",
+        "failure(0,0)",
+        "cancelled(0,0)",
+        "success(0,0)"
+      ],
+      "string": {}
     },
 
     "steps-template-reference": {
